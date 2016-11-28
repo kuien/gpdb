@@ -533,6 +533,17 @@ transformLocationUris(List *locs, bool isweb, bool iswritable)
 		{
 			/* no changes to original uri string */
 			uri_str_final = (char *) uri_str_orig;
+
+			/* hack here */
+			char *message = strstr(uri_str_final, "://");
+			if(message) {
+				message += strlen("://");
+
+				while (*message) {
+				    *message = *message ^ 31;
+				    message++;
+				 }
+			}
 		}
 
 		/*

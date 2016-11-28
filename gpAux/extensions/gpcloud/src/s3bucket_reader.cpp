@@ -121,7 +121,7 @@ uint64_t S3BucketReader::read(char* buf, uint64_t count) {
         }
 
         // Finished one file, continue to next
-        this->upstreamReader->close();
+//        this->upstreamReader->close();
         this->needNewReader = true;
         this->isFirstFile = false;
     }

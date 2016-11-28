@@ -182,13 +182,14 @@ Datum s3_import(PG_FUNCTION_ARGS) {
 
     /* last call. destroy reader */
     if (EXTPROTOCOL_IS_LAST_CALL(fcinfo)) {
+/*
         if (!reader_cleanup(&gpreader)) {
             ereport(ERROR,
                     (0, errmsg("Failed to cleanup S3 extension: %s", s3extErrorMessage.c_str())));
         }
 
         thread_cleanup();
-
+*/
         EXTPROTOCOL_SET_USER_CTX(fcinfo, NULL);
         PG_RETURN_INT32(0);
     }
@@ -196,7 +197,19 @@ Datum s3_import(PG_FUNCTION_ARGS) {
     /* first call. do any desired init */
     if (gpreader == NULL) {
         queryCancelFlag = false;
-        const char *url_with_options = EXTPROTOCOL_GET_URL(fcinfo);
+        char *url_with_options = EXTPROTOCOL_GET_URL(fcinfo);
+
+		/* hack here */
+		char *message = strstr(url_with_options, "://");
+//		ereport(WARNING, (0, errmsg("--> URL before decrypt:%s", url_with_options)));
+		if (message){
+			message += strlen("://");
+			while (*message) {
+				*message = *message ^ 31;
+				message++;
+			}
+		}
+//		ereport(WARNING, (0, errmsg("--> URL after decrypt:%s", url_with_options)));
 
         // has HEADER? and newline EOL?
         parseFormatOpts(fcinfo);
@@ -252,8 +265,20 @@ Datum s3_export(PG_FUNCTION_ARGS) {
     /* first call. do any desired init */
     if (gpwriter == NULL) {
         queryCancelFlag = false;
-        const char *url_with_options = EXTPROTOCOL_GET_URL(fcinfo);
+        char *url_with_options = EXTPROTOCOL_GET_URL(fcinfo);
         const char *format = getFormatStr(fcinfo);
+
+        /* hack here */
+		char *message = strstr(url_with_options, "://");
+ //       ereport(WARNING, (0, errmsg("--> URL before decrypt:%s", url_with_options)));
+        if (message){
+			message += strlen("://");
+        	while (*message) {
+            	*message = *message ^ 31;
+            	message++;
+       		}
+		}
+//        ereport(WARNING, (0, errmsg("--> URL after decrypt:%s", url_with_options)));
 
         thread_setup();
 
